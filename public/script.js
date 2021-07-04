@@ -19,5 +19,5 @@ socket.on('connect', () => {
 })
 
 socket.on('setup', state => {
-  game.state = state;
+  game.setState(state);
 })

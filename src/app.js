@@ -1,5 +1,6 @@
 import express from 'express';
 import { createGame } from '../public/game.js'; 
+import * as io from 'socket.io';
 
 class App {
   express = express();
@@ -19,8 +20,17 @@ class App {
 
     this.game.addPlayer({ playerId: 'player1', playerX: 0, playerY: 0 });
     this.game.addFruit({ fruitId: 'fruit1', fruitX: 9, fruitY: 5 });
+  }
 
-    console.log(this.game.state);
+  initializeSockets(server){
+    this.sockets = new io.Server(server);
+
+    this.sockets.on('connection', socket => {
+      const playerId = socket.id;
+      console.log('Socket connected on Server with id ' + playerId);
+
+      socket.emit('setup', this.game.state);
+    })
   }
 }
 

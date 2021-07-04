@@ -56,5 +56,9 @@ export function createGame(screenDimensions){
     }
   }
 
-  return { movePlayer, state, addPlayer, removePlayer, addFruit, removeFruit };
+  function setState(newState){
+    Object.assign(state, newState);
+  }
+
+  return { movePlayer, state, addPlayer, removePlayer, addFruit, removeFruit, setState };
 }
