@@ -1,0 +1,8 @@
+{
+  "name": "simple-multiplayer-game",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "repository": "https://github.com/jhleao/simple-multiplayer-game",
+  "author": "leao",
+  "license": "MIT"
+}
