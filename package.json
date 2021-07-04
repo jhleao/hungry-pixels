@@ -1,16 +1,17 @@
 {
   "name": "simple-multiplayer-game",
   "version": "1.0.0",
-  "main": "src/server.js",
   "repository": "https://github.com/jhleao/simple-multiplayer-game",
   "author": "leao",
   "license": "MIT",
   "type": "module",
+  "main": "src/server.js",
   "scripts": {
-    "start": "nodemon src/server.js"
+    "start": "nodemon"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "socket.io": "^4.1.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.9"
