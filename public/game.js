@@ -75,9 +75,9 @@ export function createGame(screenDimensions){
   function movePlayer(command){
     const acceptedMoves = {
       ArrowUp: player => player.y = Math.max(player.y - 1, 0),
-      ArrowDown: player => player.y = Math.min(player.y + 1, state.screen.height),
+      ArrowDown: player => player.y = Math.min(player.y + 1, state.screen.height - 1),
       ArrowLeft: player => player.x = Math.max(player.x - 1, 0),
-      ArrowRight: player => player.x = Math.min(player.x + 1, state.screen.width),
+      ArrowRight: player => player.x = Math.min(player.x + 1, state.screen.width - 1),
     }
 
     const { keyPressed, playerId } = command
