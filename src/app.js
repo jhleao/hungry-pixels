@@ -17,9 +17,7 @@ class App {
 
   initializeGame(){
     this.game = createGame({ width: 10, height: 10 });
-
-    this.game.addPlayer({ playerId: 'player1', playerX: 0, playerY: 0 });
-    this.game.addFruit({ fruitId: 'fruit1', fruitX: 9, fruitY: 5 });
+    this.game.start();
   }
 
   initializeSockets(server){
@@ -28,9 +26,20 @@ class App {
     this.sockets.on('connection', socket => {
       const playerId = socket.id;
       console.log('Socket connected on Server with id ' + playerId);
-
+      this.game.addPlayer({ playerId });
       socket.emit('setup', this.game.state);
-    })
+      socket.on('disconnect', () => {this.game.removePlayer({ playerId })});
+      socket.on('move-player', command => {
+        command.playerId = playerId;
+        command.type = 'move-player';
+        this.game.movePlayer(command);
+      });
+      this.game.subscribe((command) => {
+        console.log(`Emmiting command of type ${command.type}`);
+        socket.emit(command.type, command);
+      });
+    });
+
   }
 }
 
