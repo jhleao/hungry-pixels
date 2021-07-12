@@ -1,4 +1,4 @@
-export function renderScreen(screen, game, window, currentPlayerId) {
+export function renderScreen(screen, game, window, ranking, currentPlayerId) {
   const context = screen.getContext('2d');
   context.clearRect(0, 0, 10, 10); 
 
@@ -21,7 +21,30 @@ export function renderScreen(screen, game, window, currentPlayerId) {
     context.fillRect(currentPlayer.x, currentPlayer.y, 1, 1);
   }
 
+  updateRanking(ranking, game.state, currentPlayerId);
+
   window.requestAnimationFrame(() => {
-    renderScreen(screen, game, window, currentPlayerId);
+    renderScreen(screen, game, window, ranking, currentPlayerId);
   });
-}
+};
+
+function updateRanking(ranking, state, currentPlayerId){
+  let newRanking = '';
+  const playersArr = [];
+  for (const playerId in state.players){
+    const player = state.players[playerId];
+    playersArr.push({
+      id: playerId,
+      score: player.score
+    })
+  }
+  playersArr.sort((a, b) => b.score - a.score).map(p => {
+    const isCurrentPlayer = currentPlayerId === p.id;
+    newRanking += `
+      <li ${isCurrentPlayer ? 'class="current-player"' : ''}>
+        <b>${p.id}: </b>${p.score}
+      </li>`
+
+  })
+  ranking.innerHTML = newRanking;
+};

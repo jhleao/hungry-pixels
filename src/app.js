@@ -35,7 +35,7 @@ class App {
         this.game.movePlayer(command);
       });
       this.game.subscribe((command) => {
-        console.log(`Emmiting command of type ${command.type}`);
+        // console.log(`Emmiting command of type ${command.type}`);
         socket.emit(command.type, command);
       });
     });

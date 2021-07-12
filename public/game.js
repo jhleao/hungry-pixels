@@ -24,14 +24,16 @@ export function createGame(screenDimensions){
     const playerId = command.playerId;
     const playerX = 'playerX' in command ? command.playerX : Math.floor(Math.random() * state.screen.width);
     const playerY = 'playerY' in command ? command.playerY : Math.floor(Math.random() * state.screen.width);
+    const playerScore = 'playerScore' in command ? command.playerScore : 0;
 
-    state.players[playerId] = { x: playerX, y: playerY };
+    state.players[playerId] = { x: playerX, y: playerY, score: playerScore };
 
     notifyAll({
       type: 'add-player',
       playerId,
       playerX,
       playerY,
+      playerScore,
     });
   }
 
@@ -95,13 +97,24 @@ export function createGame(screenDimensions){
     }
   }
 
+  function addOnePoint(command){
+    const player = state.players[command.playerId];
+    player.score++;
+    notifyAll({
+      type: 'score-one',
+      playerId: command.playerId,
+    });
+  }
+
   function checkCollision(playerId){
     const player = state.players[playerId];
 
     for(const fruitId in state.fruits){
       const fruit = state.fruits[fruitId];
-      if(player.y === fruit.y && player.x === fruit.x)
+      if(player.y === fruit.y && player.x === fruit.x){
         removeFruit({ fruitId })
+        addOnePoint({ playerId });
+      }
     }
   }
 
@@ -110,7 +123,7 @@ export function createGame(screenDimensions){
   }
 
   function start(){
-    const frequency = 2000;
+    const frequency = 5000;
     setInterval(addFruit, frequency);
   }
 
@@ -124,5 +137,6 @@ export function createGame(screenDimensions){
     setState,
     subscribe,
     start,
+    addOnePoint,
   };
 }

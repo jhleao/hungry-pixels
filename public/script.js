@@ -3,6 +3,7 @@ import { renderScreen } from './renderScreen.js';
 import { createKeyboardListener } from "./keyboardListener.js";
 
 const screen = document.getElementById('screen');
+const ranking = document.getElementById('ranking');
 
 const game = createGame({width: screen.width, height: screen.height});
 
@@ -16,11 +17,11 @@ socket.on('connect', () => {
 
   input.registerPlayerId(playerId);
   input.subscribe(game.movePlayer);
-  renderScreen(screen, game, window, playerId);
+  renderScreen(screen, game, window, ranking, playerId);
 
   game.subscribe(command => {
     if(command.playerId === playerId && command.type === 'move-player')
-      socket.emit('move-player', command);
+      socket.emit(command.type, command);
   });
 
   socket.on('setup', state => {
@@ -47,6 +48,11 @@ socket.on('connect', () => {
   socket.on('remove-fruit', command => {
     game.removeFruit(command);
   });
+
+  socket.on('score-one', command => {
+    if(command.playerId !== playerId)
+      game.addOnePoint(command);
+  });
 })
 
-socket.onAny((eventName) => console.log(eventName))
+// socket.onAny((eventName) => console.log(eventName))
