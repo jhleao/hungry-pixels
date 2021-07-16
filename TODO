@@ -1,0 +1,20 @@
+. fazer css do blink
+. fazer css do admin
+. fazer tratamentos de erro no front
+. parar de spawnar frutas repetidas OK
+. kikar jogador quando perder auth
+. fazer dashboard admin (front + back)
+    . start game OK
+    . stop game OK
+    . frequency OK
+    . reset score OK
+    . clean fruits OK
+    . score target
+        . announce winner
+    . map size
+    . spectator mode vs. player mode
+    . click to spawn fruits (!)
+. separar storage do app (redis?)
+. separar middlewares em arquivos
+. possibilitar criar salas
+. outros gamemodes...

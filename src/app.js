@@ -1,45 +1,219 @@
 import express from 'express';
-import { createGame } from '../public/game.js'; 
+import { createGame } from '../public/js/game.js';
 import * as io from 'socket.io';
+import * as dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import jwt from 'jsonwebtoken';
+dotenv.config();
+
+const { JWT_SECRET, JWT_EXPIRY, ADMIN_PASS } = process.env;
+if (!JWT_SECRET) {
+  console.error('ERROR: Please provide JWT_SECRET in your .env file.');
+  process.exit();
+}
+if (!JWT_EXPIRY) {
+  console.error('ERROR: Please provide JWT_EXPIRY in your .env file.');
+  process.exit();
+}
 
 class App {
   express = express();
   game;
+  tokens = [];
 
-  constructor(){
+  constructor() {
     this.middlewares();
     this.initializeGame();
   }
 
-  middlewares(){
-    this.express.use(express.static('public'));
+  middlewares() {
+    this.express.use(express.json());
+    this.express.use(express.urlencoded({ extended: true }));
+    this.express.use(cookieParser());
+    this.express.use('/css', express.static('public/css'));
+    this.express.use('/js', express.static('public/js'));
+    this.express.use('/assets', express.static('public/assets'));
+    this.express.set('view engine', 'ejs');
+
+    this.express.get('/login', (req, res) => res.render('login'));
+
+    this.express.get('/', this.authOnly.bind(this), (req, res) => {
+      res.render('game');
+    });
+
+    this.express.get('/admin', this.adminAuthOnly.bind(this), (req, res) =>
+      res.render('admin-game')
+    );
+
+    this.express.get('/admin/login', (req, res) => res.render('admin-login'));
+
+    this.express.get('/api/me', this.apiAuthOnly.bind(this), (req, res) => {
+      const name = req.user.name;
+      res.send({ name });
+    });
+
+    this.express.post(
+      '/api/logout',
+      this.apiAuthOnly.bind(this),
+      (req, res) => {
+        this.tokens.splice(this.tokens.indexOf(req.token), 1);
+        res.send({ success: true });
+      }
+    );
+
+    this.express.post('/api/login', (req, res) => {
+      const { name } = req.body;
+      if (!name) return res.send({ success: false });
+
+      const newToken = jwt.sign({ name }, JWT_SECRET, {
+        expiresIn: JWT_EXPIRY,
+      });
+
+      this.tokens.push(newToken);
+
+      res.cookie('SMGSID', newToken, { httpOnly: true, maxAge: JWT_EXPIRY });
+      return res.send({ success: true });
+    });
+
+    this.express.post('/api/admin/login', (req, res) => {
+      const { name, password } = req.body;
+      if (!name || !password || password !== ADMIN_PASS)
+        return res.send({ success: false });
+
+      const newToken = jwt.sign({ name, admin: true }, JWT_SECRET, {
+        expiresIn: JWT_EXPIRY,
+      });
+      this.tokens.push(newToken);
+
+      res.cookie('SMGSID', newToken, { httpOnly: true, maxAge: JWT_EXPIRY });
+      return res.send({ success: true });
+    });
+
+    this.express.post(
+      '/api/admin/frequency',
+      this.apiAdminAuthOnly.bind(this),
+      (req, res) => {
+        const { frequency } = req.body;
+        this.game.setFrequency(frequency);
+      }
+    );
+
+    this.express.post(
+      '/api/admin/start',
+      this.apiAdminAuthOnly.bind(this),
+      (req, res) => {
+        this.game.start();
+      }
+    );
+
+    this.express.post(
+      '/api/admin/stop',
+      this.apiAdminAuthOnly.bind(this),
+      (req, res) => {
+        this.game.stop();
+      }
+    );
+
+    this.express.post(
+      '/api/admin/resetscores',
+      this.apiAdminAuthOnly.bind(this),
+      (req, res) => {
+        this.game.resetScores();
+      }
+    );
+
+    this.express.post(
+      '/api/admin/clearfruits',
+      this.apiAdminAuthOnly.bind(this),
+      (req, res) => {
+        this.game.clearFruits();
+      }
+    );
   }
 
-  initializeGame(){
+  // TODO move this into separate file (must separate tokens storage too)
+  authOnly(req, res, next) {
+    const token = req.cookies.SMGSID;
+    if (!token || !this.tokens.includes(token)) return res.redirect('/login');
+    try {
+      req.user = jwt.verify(token, JWT_SECRET);
+      req.token = token;
+      return next();
+    } catch {
+      return res.redirect('/login');
+    }
+  }
+
+  // TODO move this into separate file (must separate tokens storage too)
+  apiAuthOnly(req, res, next) {
+    const token = req.cookies.SMGSID;
+    if (!token || !this.tokens.includes(token)) return res.sendStatus(401);
+    try {
+      req.user = jwt.verify(token, JWT_SECRET);
+      req.token = token;
+      return next();
+    } catch {
+      return res.sendStatus(401);
+    }
+  }
+
+  // TODO move this into separate file (must separate tokens storage too)
+  adminAuthOnly(req, res, next) {
+    const token = req.cookies.SMGSID;
+    if (!token || !this.tokens.includes(token))
+      return res.redirect('/admin/login');
+    try {
+      req.user = jwt.verify(token, JWT_SECRET);
+      req.token = token;
+      const isAdmin = req.user.admin;
+      if (!isAdmin) return res.redirect('/');
+      return next();
+    } catch {
+      return res.redirect('/admin/login');
+    }
+  }
+
+  // TODO move this into separate file (must separate tokens storage too)
+  apiAdminAuthOnly(req, res, next) {
+    const token = req.cookies.SMGSID;
+    if (!token || !this.tokens.includes(token)) return res.sendStatus(401);
+    try {
+      req.user = jwt.verify(token, JWT_SECRET);
+      req.token = token;
+      const isAdmin = req.user.admin;
+      if (!isAdmin) return res.sendStatus(401);
+      return next();
+    } catch {
+      return res.sendStatus(401);
+    }
+  }
+
+  initializeGame() {
     this.game = createGame({ width: 10, height: 10 });
     this.game.start();
   }
 
-  initializeSockets(server){
+  initializeSockets(server) {
     this.sockets = new io.Server(server);
 
-    this.sockets.on('connection', socket => {
+    this.sockets.on('connection', (socket) => {
       const playerId = socket.id;
+      const playerName = socket.handshake.auth.name;
       console.log('Socket connected on Server with id ' + playerId);
-      this.game.addPlayer({ playerId });
+      this.game.addPlayer({ playerId, playerName });
       socket.emit('setup', this.game.state);
-      socket.on('disconnect', () => {this.game.removePlayer({ playerId })});
-      socket.on('move-player', command => {
+      socket.on('disconnect', () => {
+        this.game.removePlayer({ playerId });
+      });
+      socket.on('move-player', (command) => {
         command.playerId = playerId;
         command.type = 'move-player';
         this.game.movePlayer(command);
       });
       this.game.subscribe((command) => {
-        // console.log(`Emmiting command of type ${command.type}`);
         socket.emit(command.type, command);
       });
     });
-
   }
 }
 

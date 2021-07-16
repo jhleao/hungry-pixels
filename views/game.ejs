@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Multiplayer Game</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <div id="page-container">
+      <canvas id="screen" width="10" height="10"></canvas>
+      <div id="side-content right">
+        <ol id="ranking"></ol>
+        <button id="logout-button">quit</button>
+      </div>
+    </div>
+    <script src="/js/script.js" type="module" async></script>
+  </body>
+</html>

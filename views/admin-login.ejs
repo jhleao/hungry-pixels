@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Multiplayer Game</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
+  </head>
+  <body>
+    <div id="page-container">
+      <form>
+        <label for="name">admin<span class='blink'>|<span></label>
+        <input type="text" limit="10" name="name" />
+        <input type="password" limit="50" name="password" />
+        <button type="submit">Enter</button>
+      </form>
+      <script>
+        const form = document.getElementsByTagName('form')[0];
+        form.onsubmit = handleSubmit;
+
+        async function handleSubmit(e) {
+          e.preventDefault();
+          const name = document.querySelector('form > input[name=\'name\']').value;
+          const password = document.querySelector('form > input[name=\'password\']').value;
+          const res = await fetch(`/api/admin/login`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name, password }),
+          }).then(r => r.json());
+          if(res.success) window.location.href = window.location.origin + '/admin';
+        }
+      </script>
+    </div>
+  </body>
+</html>

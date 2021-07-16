@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Multiplayer Game</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
+  </head>
+  <body>
+    <div id="page-container">
+      <form>
+        <label for="name">nickname<span class='blink'>|<span></label>
+        <input type="text" limit="10" name="name" />
+        <button type="submit">Join</button>
+      </form>
+      <script>
+        const form = document.getElementsByTagName('form')[0];
+        form.onsubmit = handleSubmit;
+
+        async function handleSubmit(e) {
+          e.preventDefault();
+          const name = document.getElementsByTagName('input')[0].value;
+          const res = await fetch(`/api/login`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name }),
+          }).then(r => r.json());
+          if(res.success) window.location.href = window.location.origin;
+        }
+      </script>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Multiplayer Game</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <div id="page-container">
+      <div class="side-content left">
+        <h1>admin controls</h1>
+        <form id="frequency-form">
+          <label>frequency</label>
+          <input type="number" />
+          <button type="submit">set</button>
+        </form>
+        <div class="row">
+          <button id="start-game">start game</button>
+          <button id="stop-game">stop game</button>
+        </div>
+        <div class="row">
+          <button id="reset-scores">reset score</button>
+          <button id="reset-fruits">reset fruits</button>
+        </div>
+      </div>
+      <canvas id="screen" width="10" height="10"></canvas>
+      <div class="side-content right">
+        <ol id="ranking"></ol>
+        <button id="logout-button">quit</button>
+      </div>
+    </div>
+    <script src="/js/script.js" type="module" async></script>
+    <script async>
+      document.getElementById('frequency-form').onsubmit = setFrequency;
+      document.getElementById('start-game').onclick = startGame;
+      document.getElementById('stop-game').onclick = stopGame;
+      document.getElementById('reset-scores').onclick = resetScores;
+      document.getElementById('reset-fruits').onclick = resetFruits;
+
+      function setFrequency(e) {
+        e.preventDefault();
+        const frequency = document.querySelector(
+          '#frequency-form > input'
+        ).value;
+        fetch('/api/admin/frequency', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ frequency }),
+        });
+      }
+
+      function startGame() {
+        fetch('/api/admin/start', { method: 'POST' });
+      }
+
+      function stopGame() {
+        fetch('/api/admin/stop', { method: 'POST' });
+      }
+
+      function resetScores() {
+        fetch('/api/admin/resetscores', { method: 'POST' });
+      }
+
+      function resetFruits() {
+        fetch('/api/admin/clearfruits', { method: 'POST' });
+      }
+    </script>
+  </body>
+</html>
