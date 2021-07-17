@@ -4,15 +4,19 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simple Multiplayer Game</title>
+    <title>Hungry Pixels</title>
     <link rel="stylesheet" href="/css/styles.css" />
     <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
     <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
     <div id="page-container">
-      <canvas id="screen" width="10" height="10"></canvas>
+      <div id="screen-area">
+        <canvas id="screen" width="10" height="10"></canvas>
+        <h1 class="message-board"></h1>
+      </div>
       <div id="side-content right">
+        <p id="score-target"></p>
         <ol id="ranking"></ol>
         <button id="logout-button">quit</button>
       </div>

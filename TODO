@@ -1,8 +1,7 @@
-. fazer css do blink
-. fazer css do admin
+. fazer css do blink OK
+. fazer css do admin OK
 . fazer tratamentos de erro no front
 . parar de spawnar frutas repetidas OK
-. kikar jogador quando perder auth
 . fazer dashboard admin (front + back)
     . start game OK
     . stop game OK
@@ -15,6 +14,7 @@
     . spectator mode vs. player mode
     . click to spawn fruits (!)
 . separar storage do app (redis?)
+. kikar jogador quando perder auth
 . separar middlewares em arquivos
 . possibilitar criar salas
 . outros gamemodes...

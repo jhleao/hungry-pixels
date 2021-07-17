@@ -5,6 +5,8 @@ import { createKeyboardListener } from './keyboardListener.js';
 const screen = document.getElementById('screen');
 const ranking = document.getElementById('ranking');
 const logoutButton = document.getElementById('logout-button');
+const scoreTarget = document.getElementById('score-target');
+const messageBoard = document.querySelector('.message-board');
 logoutButton.onclick = () => logout(true);
 
 const game = createGame({ width: screen.width, height: screen.height });
@@ -30,7 +32,16 @@ socket.on('connect', () => {
       socket.emit(command.type, command);
   });
 
-  socket.on('setup', (state) => {
+  socket.on('setup', (state, config) => {
+    scoreTarget.style.display = 'none';
+    scoreTarget.innerHTML = ``;
+    if (config.scoreTarget) {
+      scoreTarget.style.display = 'block';
+      scoreTarget.innerHTML = `target: <div class="big">${config.scoreTarget}</div>`;
+    }
+    screen.width = config.screen.width;
+    screen.height = config.screen.height;
+    game.setConfig(config);
     game.setState(state);
   });
 
@@ -66,10 +77,38 @@ socket.on('connect', () => {
     game.clearFruits();
   });
 
+  socket.on('announce-winner', (command) => {
+    const winner = game.state.players[command.playerId].name;
+    messageBoard.innerHTML = `<div>${winner}</div> wins!`;
+    messageBoard.style.display = 'block';
+    setTimeout(() => {
+      messageBoard.innerHTML = '';
+      messageBoard.style.display = 'none';
+    }, 5000);
+  });
+
+  socket.on('start-countdown', () => {
+    startCountdown();
+  });
+
   // window.addEventListener('beforeunload', () => {
   //   logout();
   // });
 });
+
+async function startCountdown() {
+  messageBoard.style.display = 'block';
+  messageBoard.innerHTML = `3`;
+  await new Promise((resolve) => setTimeout(() => resolve(), 1000));
+  messageBoard.innerHTML = `2`;
+  await new Promise((resolve) => setTimeout(() => resolve(), 1000));
+  messageBoard.innerHTML = `1`;
+  await new Promise((resolve) => setTimeout(() => resolve(), 1000));
+  messageBoard.innerHTML = `<div class='blink'>start!</div>`;
+  await new Promise((resolve) => setTimeout(() => resolve(), 1000));
+  messageBoard.innerHTML = ``;
+  messageBoard.style.display = 'none';
+}
 
 async function logout(redirect) {
   await fetch('/api/logout', { method: 'POST' });
@@ -77,4 +116,4 @@ async function logout(redirect) {
 }
 
 // For debugging purposes
-socket.onAny((eventName) => console.log(eventName));
+// socket.onAny((eventName) => console.log(eventName));

@@ -10,12 +10,39 @@ body {
 }
 
 #screen {
-  border: 10px solid #ccc;
+  border: 5px solid #ccc;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   image-rendering: -moz-crisp-edges;
   width: 500px;
   height: 500px;
+}
+
+#screen-area {
+  position: relative;
+}
+
+.message-board {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 2.5rem;
+}
+
+@keyframes fade-in-upwards {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 #page-container {
@@ -24,6 +51,10 @@ body {
   justify-content: center;
   width: 100%;
   height: 95vh;
+}
+
+.fade-upwards {
+  animation: fade-in-upwards 0.5s ease-out 0.1s 1 forwards;
 }
 
 #ranking > li {
@@ -58,6 +89,13 @@ form input {
   font-weight: 600;
   font-size: 2rem;
   text-align: center;
+}
+
+form input::placeholder {
+  opacity: 0.5;
+  font-size: 1rem;
+  top: 0;
+  letter-spacing: 1px;
 }
 
 button {
@@ -100,6 +138,22 @@ form button,
   margin-right: 3rem;
 }
 
+.side-content.right > p {
+  display: none;
+  width: 84%;
+  margin: 0;
+  margin-left: 17px;
+  text-align: center;
+  padding-bottom: 7px;
+  border-bottom: solid 2px var(--black);
+}
+
+.big {
+  margin-top: 2px;
+  font-weight: 600;
+  font-size: 2em;
+}
+
 .side-content > .row {
   display: flex;
   flex-flow: row nowrap;
@@ -126,30 +180,40 @@ form button,
   font-size: 2.5rem;
 }
 
-#frequency-form {
+.admin-setting {
   display: flex;
   flex-flow: row nowrap;
   align-items: flex-end;
-  justify-content: center;
+  justify-content: flex-end;
+  width: 100%;
 }
 
-#frequency-form > *:not(:last-child) {
+.admin-setting > *:not(:last-child) {
   margin-bottom: 0;
   margin-right: 1rem;
 }
 
-#frequency-form > label {
+.admin-setting > label {
   font-size: 1rem;
 }
 
-#frequency-form > input {
+.admin-setting > input {
   font-size: 1rem;
   width: 5rem;
 }
 
-#frequency-form > button {
+.admin-setting > button {
   font-size: 1rem;
   padding: 0.5rem;
+}
+
+#size-form > input {
+  width: 2rem;
+}
+
+#size-form > input:first-of-type,
+#size-form > b {
+  margin-right: 3px;
 }
 
 input::-webkit-outer-spin-button,
@@ -172,5 +236,12 @@ input::-webkit-inner-spin-button {
 
 .blink {
   animation: blink 1s ease-out infinite forwards running;
-  color: var(--yellow);
+}
+
+.square {
+  display: inline-block;
+  margin-left: 0.5rem;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+  background: var(--yellow);
 }

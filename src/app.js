@@ -95,6 +95,7 @@ class App {
       (req, res) => {
         const { frequency } = req.body;
         this.game.setFrequency(frequency);
+        return res.sendStatus(200);
       }
     );
 
@@ -102,7 +103,9 @@ class App {
       '/api/admin/start',
       this.apiAdminAuthOnly.bind(this),
       (req, res) => {
-        this.game.start();
+        this.sockets.emit('start-countdown');
+        setTimeout(() => this.game.start(), 3000);
+        return res.sendStatus(200);
       }
     );
 
@@ -111,6 +114,7 @@ class App {
       this.apiAdminAuthOnly.bind(this),
       (req, res) => {
         this.game.stop();
+        return res.sendStatus(200);
       }
     );
 
@@ -119,6 +123,7 @@ class App {
       this.apiAdminAuthOnly.bind(this),
       (req, res) => {
         this.game.resetScores();
+        return res.sendStatus(200);
       }
     );
 
@@ -127,8 +132,62 @@ class App {
       this.apiAdminAuthOnly.bind(this),
       (req, res) => {
         this.game.clearFruits();
+        return res.sendStatus(200);
       }
     );
+
+    this.express.post(
+      '/api/admin/size',
+      this.apiAdminAuthOnly.bind(this),
+      (req, res) => {
+        const { width, height } = req.body;
+        this.game.setScreenSize(width, height);
+        this.emitStateAndConfigToAll();
+        return res.sendStatus(200);
+      }
+    );
+
+    this.express.post(
+      '/api/admin/target',
+      this.apiAdminAuthOnly.bind(this),
+      (req, res) => {
+        const { target } = req.body;
+        if (target < 1) {
+          this.game.setTarget(null);
+          this.emitStateAndConfigToAll();
+          return res.sendStatus(200);
+        }
+        this.game.setTarget(target);
+        this.emitStateAndConfigToAll();
+        return res.sendStatus(200);
+      }
+    );
+
+    this.express.get(
+      '/api/admin/config',
+      this.apiAdminAuthOnly.bind(this),
+      (req, res) => {
+        const { state, config } = this.getStateAndConfig();
+        res.send({ state, config });
+      }
+    );
+  }
+
+  getStateAndConfig() {
+    const state = { ...this.game.state };
+    const config = { ...this.game.config };
+    delete config.intervalId;
+    return { state, config };
+  }
+
+  emitStateAndConfigToAll() {
+    const { state, config } = this.getStateAndConfig();
+    this.sockets.emit('setup', state, config);
+  }
+
+  emitStateAndConfigToSocket(socket) {
+    const { state, config } = this.getStateAndConfig();
+    socket.emit('setup', state, config);
   }
 
   // TODO move this into separate file (must separate tokens storage too)
@@ -190,7 +249,6 @@ class App {
 
   initializeGame() {
     this.game = createGame({ width: 10, height: 10 });
-    this.game.start();
   }
 
   initializeSockets(server) {
@@ -201,7 +259,9 @@ class App {
       const playerName = socket.handshake.auth.name;
       console.log('Socket connected on Server with id ' + playerId);
       this.game.addPlayer({ playerId, playerName });
-      socket.emit('setup', this.game.state);
+
+      this.emitStateAndConfigToSocket(socket);
+
       socket.on('disconnect', () => {
         this.game.removePlayer({ playerId });
       });

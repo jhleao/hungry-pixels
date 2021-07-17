@@ -2,15 +2,16 @@ export function createGame(screenDimensions) {
   const state = {
     players: {},
     fruits: {},
+  };
+
+  const config = {
+    frequency: 1000,
+    intervalId: null,
+    scoreTarget: null,
     screen: {
       width: screenDimensions.width,
       height: screenDimensions.height,
     },
-  };
-
-  const config = {
-    frequency: 3000,
-    intervalId: null,
   };
 
   const gameIsRunning = () => !!config.intervalId;
@@ -33,11 +34,11 @@ export function createGame(screenDimensions) {
     const playerX =
       'playerX' in command
         ? command.playerX
-        : Math.floor(Math.random() * state.screen.width);
+        : Math.floor(Math.random() * config.screen.width);
     const playerY =
       'playerY' in command
         ? command.playerY
-        : Math.floor(Math.random() * state.screen.width);
+        : Math.floor(Math.random() * config.screen.width);
     const playerScore = 'playerScore' in command ? command.playerScore : 0;
 
     state.players[playerId] = {
@@ -69,7 +70,7 @@ export function createGame(screenDimensions) {
   }
 
   function addFruit(command, tries = 0) {
-    const screenArea = state.screen.width * state.screen.height;
+    const screenArea = config.screen.width * config.screen.height;
     const fruitAmount = Object.keys(state.fruits).length;
     const mapIsFull = fruitAmount >= screenArea;
     if (mapIsFull) return;
@@ -79,10 +80,10 @@ export function createGame(screenDimensions) {
       : Math.floor(Math.random() * 1000000);
     const fruitX = command
       ? command.fruitX
-      : Math.floor(Math.random() * state.screen.width);
+      : Math.floor(Math.random() * config.screen.width);
     const fruitY = command
       ? command.fruitY
-      : Math.floor(Math.random() * state.screen.height);
+      : Math.floor(Math.random() * config.screen.height);
 
     const coordsAlreadyHaveFruit = Object.keys(state.fruits).reduce(
       (acc, fruitId) => {
@@ -122,10 +123,10 @@ export function createGame(screenDimensions) {
     const acceptedMoves = {
       ArrowUp: (player) => (player.y = Math.max(player.y - 1, 0)),
       ArrowDown: (player) =>
-        (player.y = Math.min(player.y + 1, state.screen.height - 1)),
+        (player.y = Math.min(player.y + 1, config.screen.height - 1)),
       ArrowLeft: (player) => (player.x = Math.max(player.x - 1, 0)),
       ArrowRight: (player) =>
-        (player.x = Math.min(player.x + 1, state.screen.width - 1)),
+        (player.x = Math.min(player.x + 1, config.screen.width - 1)),
     };
 
     const { keyPressed, playerId } = command;
@@ -150,6 +151,11 @@ export function createGame(screenDimensions) {
       type: 'score-one',
       playerId: command.playerId,
     });
+    if (config.scoreTarget && player.score >= config.scoreTarget) {
+      stop();
+      clearFruits();
+      announceWinner(command.playerId);
+    }
   }
 
   function checkCollision(playerId) {
@@ -157,6 +163,7 @@ export function createGame(screenDimensions) {
 
     for (const fruitId in state.fruits) {
       const fruit = state.fruits[fruitId];
+      if (!fruit) return;
       if (player.y === fruit.y && player.x === fruit.x) {
         removeFruit({ fruitId });
         addOnePoint({ playerId });
@@ -183,6 +190,33 @@ export function createGame(screenDimensions) {
     if (gameIsRunning()) start();
   }
 
+  function setScreenSize(width, height) {
+    config.screen.width = width;
+    config.screen.height = height;
+    randomizeAllPositions();
+  }
+
+  function randomizeAllPositions() {
+    for (const playerId in state.players) {
+      const player = state.players[playerId];
+      player.x = Math.floor(Math.random() * config.screen.width);
+      player.y = Math.floor(Math.random() * config.screen.height);
+    }
+    for (const fruitId in state.fruits) {
+      const fruit = state.fruits[fruitId];
+      fruit.x = Math.floor(Math.random() * config.screen.width);
+      fruit.y = Math.floor(Math.random() * config.screen.height);
+    }
+  }
+
+  function setTarget(scoreTarget) {
+    config.scoreTarget = scoreTarget;
+  }
+
+  function setConfig(newConfig) {
+    Object.assign(config, newConfig);
+  }
+
   function resetScores() {
     for (const playerId in state.players) {
       const player = state.players[playerId];
@@ -196,9 +230,17 @@ export function createGame(screenDimensions) {
     notifyAll({ type: 'clear-fruits' });
   }
 
+  function announceWinner(playerId) {
+    notifyAll({
+      type: 'announce-winner',
+      playerId,
+    });
+  }
+
   return {
     movePlayer,
     state,
+    config,
     addPlayer,
     removePlayer,
     addFruit,
@@ -211,5 +253,8 @@ export function createGame(screenDimensions) {
     resetScores,
     clearFruits,
     setFrequency,
+    setTarget,
+    setConfig,
+    setScreenSize,
   };
 }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simple Multiplayer Game</title>
+    <title>Hungry Pixels</title>
     <link rel="stylesheet" href="/css/styles.css" />
     <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
     <script src="/socket.io/socket.io.js"></script>
@@ -13,8 +13,20 @@
     <div id="page-container">
       <div class="side-content left">
         <h1>admin controls</h1>
-        <form id="frequency-form">
+        <form id="frequency-form" class="admin-setting">
           <label>frequency</label>
+          <input type="number" />
+          <button type="submit">set</button>
+        </form>
+        <form id="target-form" class="admin-setting">
+          <label>score limit</label>
+          <input type="number" />
+          <button type="submit">set</button>
+        </form>
+        <form id="size-form" class="admin-setting">
+          <label>size</label>
+          <input type="number" />
+          <b>x</b>
           <input type="number" />
           <button type="submit">set</button>
         </form>
@@ -27,8 +39,12 @@
           <button id="reset-fruits">reset fruits</button>
         </div>
       </div>
-      <canvas id="screen" width="10" height="10"></canvas>
+      <div id="screen-area">
+        <canvas id="screen" width="10" height="10"></canvas>
+        <h1 class="message-board"></h1>
+      </div>
       <div class="side-content right">
+        <p id="score-target"></p>
         <ol id="ranking"></ol>
         <button id="logout-button">quit</button>
       </div>
@@ -36,21 +52,67 @@
     <script src="/js/script.js" type="module" async></script>
     <script async>
       document.getElementById('frequency-form').onsubmit = setFrequency;
+      document.getElementById('target-form').onsubmit = setTarget;
       document.getElementById('start-game').onclick = startGame;
       document.getElementById('stop-game').onclick = stopGame;
       document.getElementById('reset-scores').onclick = resetScores;
       document.getElementById('reset-fruits').onclick = resetFruits;
+      document.getElementById('size-form').onsubmit = setSize;
+
+      const frequencyInput = document.querySelector('#frequency-form > input');
+      const targetInput = document.querySelector('#target-form > input');
+      const widthInput = document.querySelectorAll('#size-form > input')[0];
+      const heightInput = document.querySelectorAll('#size-form > input')[1];
+
+      async function getServerConfig() {
+        const res = await fetch('/api/admin/config').then((r) => r.json());
+        const {
+          config: { screen, scoreTarget, frequency },
+        } = res;
+        frequencyInput.value = frequency;
+        targetInput.value = scoreTarget ? scoreTarget : 0;
+        widthInput.value = screen.width;
+        heightInput.value = screen.height;
+      }
+
+      getServerConfig();
+
+      function unfocusAll() {
+        if ('activeElement' in document) document.activeElement.blur();
+      }
 
       function setFrequency(e) {
         e.preventDefault();
-        const frequency = document.querySelector(
-          '#frequency-form > input'
-        ).value;
+        const frequency = parseInt(frequencyInput.value);
         fetch('/api/admin/frequency', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ frequency }),
         });
+        unfocusAll();
+      }
+
+      function setTarget(e) {
+        e.preventDefault();
+        const target = parseInt(targetInput.value);
+        fetch('/api/admin/target', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target }),
+        });
+        unfocusAll();
+      }
+
+      function setSize(e) {
+        e.preventDefault();
+        const width = parseInt(widthInput.value);
+        const height = parseInt(heightInput.value);
+        fetch('/api/admin/size', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ width, height }),
+        });
+        unfocusAll();
       }
 
       function startGame() {

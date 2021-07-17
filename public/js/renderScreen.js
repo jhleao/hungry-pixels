@@ -1,6 +1,6 @@
 export function renderScreen(screen, game, window, ranking, currentPlayerId) {
   const context = screen.getContext('2d');
-  context.clearRect(0, 0, 10, 10);
+  context.clearRect(0, 0, screen.width, screen.height);
 
   const style = getComputedStyle(document.body);
   const black = style.getPropertyValue('--black');
