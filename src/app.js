@@ -4,6 +4,8 @@ import * as io from 'socket.io';
 import * as dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
+import hexToRgb from './utils/hexToRgb.js';
+import getIdealTextColor from './utils/getIdealTextColor.js';
 dotenv.config();
 
 const { JWT_SECRET, JWT_EXPIRY, ADMIN_PASS } = process.env;
@@ -48,8 +50,8 @@ class App {
     this.express.get('/admin/login', (req, res) => res.render('admin-login'));
 
     this.express.get('/api/me', this.apiAuthOnly.bind(this), (req, res) => {
-      const name = req.user.name;
-      res.send({ name });
+      const { name, color } = req.user;
+      res.send({ name, color });
     });
 
     this.express.post(
@@ -62,10 +64,10 @@ class App {
     );
 
     this.express.post('/api/login', (req, res) => {
-      const { name } = req.body;
+      const { name, color } = req.body;
       if (!name) return res.send({ success: false });
 
-      const newToken = jwt.sign({ name }, JWT_SECRET, {
+      const newToken = jwt.sign({ name, color }, JWT_SECRET, {
         expiresIn: JWT_EXPIRY,
       });
 
@@ -256,9 +258,20 @@ class App {
 
     this.sockets.on('connection', (socket) => {
       const playerId = socket.id;
-      const playerName = socket.handshake.auth.name;
+
       console.log('Socket connected on Server with id ' + playerId);
-      this.game.addPlayer({ playerId, playerName });
+
+      const playerName = socket.handshake.auth.name;
+      const playerColorHex = socket.handshake.auth.color;
+      const playerColorRgb = hexToRgb(playerColorHex);
+      const playerTextColor = getIdealTextColor(playerColorRgb);
+
+      this.game.addPlayer({
+        playerId,
+        playerName,
+        playerColor: playerColorHex,
+        playerTextColor,
+      });
 
       this.emitStateAndConfigToSocket(socket);
 

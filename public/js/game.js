@@ -31,6 +31,8 @@ export function createGame(screenDimensions) {
   function addPlayer(command) {
     const playerId = command.playerId;
     const playerName = command.playerName;
+    const playerColor = command.playerColor;
+    const playerTextColor = command.playerTextColor;
     const playerX =
       'playerX' in command
         ? command.playerX
@@ -46,6 +48,8 @@ export function createGame(screenDimensions) {
       x: playerX,
       y: playerY,
       score: playerScore,
+      color: playerColor,
+      textColor: playerTextColor,
     };
 
     notifyAll({
@@ -55,6 +59,8 @@ export function createGame(screenDimensions) {
       playerX,
       playerY,
       playerScore,
+      playerColor,
+      playerTextColor,
     });
   }
 

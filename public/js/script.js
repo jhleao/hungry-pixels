@@ -13,11 +13,9 @@ const game = createGame({ width: screen.width, height: screen.height });
 
 const input = createKeyboardListener(document);
 
-const playerName = await fetch('/api/me')
-  .then((r) => r.json())
-  .then((r) => r.name);
+const playerData = await fetch('/api/me').then((r) => r.json());
 
-const socket = io({ auth: { name: playerName } });
+const socket = io({ auth: { name: playerData.name, color: playerData.color } });
 
 socket.on('connect', () => {
   const playerId = socket.id;

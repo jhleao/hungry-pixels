@@ -57,8 +57,15 @@ body {
   animation: fade-in-upwards 0.5s ease-out 0.1s 1 forwards;
 }
 
+#ranking {
+  list-style-type: none;
+  padding: 0;
+  padding-left: 1rem;
+}
+
 #ranking > li {
   padding: 2px 5px;
+  margin-bottom: 5px;
 }
 
 .current-player > b {
@@ -116,12 +123,37 @@ button:hover {
 
 form button,
 #logout-button {
-  margin-top: 0.5rem;
   width: 7rem;
 }
 
 #logout-button {
+  margin-top: 0.5rem;
+}
+
+#logout-button {
   margin-left: 1rem;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+#colors {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 2.5rem;
+  width: 100vw;
+  overflow: hidden;
+  margin-top: 0.3rem;
+  white-space: nowrap;
+  opacity: 0;
+  animation: fade-in 1s ease-in-out 0.5s 1 forwards;
 }
 
 .side-content {
@@ -207,6 +239,11 @@ form button,
   padding: 0.5rem;
 }
 
+#frequency-form,
+#target-form {
+  margin-bottom: 0.6rem;
+}
+
 #size-form > input {
   width: 2rem;
 }
@@ -244,4 +281,32 @@ input::-webkit-inner-spin-button {
   min-width: 1.5rem;
   min-height: 1.5rem;
   background: var(--yellow);
+}
+
+.hex-picker {
+  width: 5rem;
+  font-size: 1rem;
+  font-weight: 400;
+  text-align: left;
+}
+
+.color-box {
+  display: inline-block;
+  margin-left: 0.5rem;
+  min-width: 2rem;
+  min-height: 2rem;
+  cursor: pointer;
+  transition: all 0.1s ease-out;
+}
+
+.color-box.selected {
+  transform: scale(1.2);
+}
+
+.color-box:not(.selected):hover {
+  transform: scale(1.1);
+}
+
+.gapped-horizontal > *:not(:last-child) {
+  margin-right: 0.5em;
 }

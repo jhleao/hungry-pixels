@@ -11,11 +11,69 @@
   <body>
     <div id="page-container" class="fade-upwards">
       <form>
-        <label for="name">hungry pixels<span class='blink square'><span></label>
+        <label>hungry pixels<span class='blink square'><span></label>
         <input type="text" limit="10" name="name" placeholder="nickname"/>
+        <div class='row gapped-horizontal' id="colors">
+          <!-- <span>or</span>
+          <span>#</span>
+          <input class='hex-picker' type="text" maxlength="6" name="color" placeholder="F0DB4F"/> -->
+        </div>
         <button type="submit">Join</button>
       </form>
       <script>
+        const logoSquare = document.querySelector('.blink.square');
+
+        const colors = ['#37FF8B', '#4C212A', '#ED33B9', '#C1292E', '#0D5D56', '#001F54', '#A4031F', '#FF7B9C', '#84C318', '#FB4D3D',
+         '#02182B', '#04773B', '#1B1B1E', '#F1D302', '#F00528', '#0081B8', '#CA3F79',
+        '#F34213', '#2F004F', '#A1E44D', '#EE6352',  '#86BBD8', '#362417', '#235789', '#FC7753', '#D90429', '#E85D75', ];
+        let selectedColor = colors[13];
+        logoSquare.style.background = selectedColor;
+        
+        renderColors();
+
+        // TODO fix animation
+          // function shuffleColors() {
+          //   let currentIndex = colors.length;
+          //   let randomIndex
+          //   while (0 !== currentIndex) {
+          //     randomIndex = Math.floor(Math.random() * currentIndex);
+          //     currentIndex--;
+          //     [colors[currentIndex], colors[randomIndex]] = [colors[randomIndex], colors[currentIndex]];
+          //   }
+          // }
+          // async function initialAnimation(it = 1){
+          //   const lastIteration = it >= 55;
+          //   if(lastIteration) selectedColor = colors[colors.length / 2];
+          //   renderColors();
+          //   shuffleColors();
+          //   await new Promise(resolve => setTimeout(() => resolve(), 2 * it));
+          //   if(!lastIteration) initialAnimation(++it)
+          // }
+          // initialAnimation();
+
+        function selectColor(i){
+          const previouslySelectedElement = document.querySelector('.color-box.selected');
+          const elementToSelect = document.querySelectorAll('.color-box')[i];
+          if(previouslySelectedElement) previouslySelectedElement.classList.remove('selected');
+          elementToSelect.classList.add('selected');
+          selectedColor = colors[i];
+          logoSquare.style.background = selectedColor;
+        }
+
+        function renderColors(){
+          const colorsContainer = document.getElementById('colors');
+          colorsContainer.innerHTML = '';
+          colors.map((c, i) => {
+            const element = document.createElement('div');
+            element.classList.add('color-box');
+            if(i === colors.indexOf(selectedColor)) 
+              element.classList.add('selected');
+            element.style = `background: ${c}`;
+            element.onclick = () => selectColor(i); 
+            colorsContainer.appendChild(element);
+          });
+        }
+
         const form = document.getElementsByTagName('form')[0];
         form.onsubmit = handleSubmit;
 
@@ -25,7 +83,7 @@
           const res = await fetch(`/api/login`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ name }),
+            body: JSON.stringify({ name, color: selectedColor }),
           }).then(r => r.json());
           if(res.success) window.location.href = window.location.origin;
         }
